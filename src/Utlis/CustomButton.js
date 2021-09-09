@@ -17,7 +17,6 @@ const CustomButton = ({name, size, color, text, style, onPress, textStyle}) => {
     </>
   );
 };
-
 export default CustomButton;
 
 const styles = StyleSheet.create({
