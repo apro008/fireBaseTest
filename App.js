@@ -4,7 +4,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 
 import Home from './src/screen/Home';
 import AddItem from './src/screen/AddItem';
-import List from './src/screen/List';
+import Camera from './src/screen/Camera';
 import Register from './src/screen/Register';
 import Signin from './src/screen/Signin';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
@@ -34,7 +34,7 @@ const App = () => {
         }}>
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="AddItem" component={AddItem} />
-        <Stack.Screen name="List" component={List} />
+        <Stack.Screen name="Camera" component={Camera} />
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen name="Signin" component={Signin} />
       </Stack.Navigator>

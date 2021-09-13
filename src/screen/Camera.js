@@ -6,7 +6,7 @@ import CustomButton from '../Utlis/CustomButton';
 
 import ImagePicker from 'react-native-image-crop-picker';
 
-const List = () => {
+const Camera = () => {
   const [image, setImage] = React.useState(null);
   const [modal, setModal] = React.useState(false);
   const sheetRef = React.useRef(null);
@@ -129,7 +129,7 @@ const List = () => {
   );
 };
 
-export default List;
+export default Camera;
 
 const styles = StyleSheet.create({
   renderContent: {
