@@ -16,7 +16,7 @@ const Home = ({navigation}) => {
         <Text style={GlobalStyles.Text}>Add item</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('List')}>
-        <Text style={GlobalStyles.Text}>List</Text>
+        <Text style={GlobalStyles.Text}>Camera</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('Register')}>
         <Text style={GlobalStyles.Text}>Register</Text>
