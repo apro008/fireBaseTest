@@ -1,22 +1,38 @@
 import React from 'react';
-import {StyleSheet, Text, View, Platform, Animated} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Platform,
+  Animated,
+  Alert,
+  ActivityIndicator,
+  Linking,
+  TouchableOpacity,
+} from 'react-native';
 import GlobalStyles from '../Utlis/GlobalStyles';
 import BottomSheet from 'reanimated-bottom-sheet';
 import CustomButton from '../Utlis/CustomButton';
+import AddImage from './AddImage';
 
 import ImagePicker from 'react-native-image-crop-picker';
+import storage from '@react-native-firebase/storage';
 
 const Camera = () => {
   const [image, setImage] = React.useState(null);
   const [modal, setModal] = React.useState(false);
+  const [uploading, setUploading] = React.useState(false);
+  const [transferred, setTransferred] = React.useState(0);
+  const [downloadUrl, setDownloadUrl] = React.useState(null);
+
   const sheetRef = React.useRef(null);
-  const fall = new Animated.Value(0);
+  const fall = new Animated.Value(1);
 
   const takePhotoFromCamera = () => {
     try {
       ImagePicker.openCamera({
-        compressImageMaxHeight: 300,
-        compressImageMaxWidth: 300,
+        compressImageMaxHeight: 1280,
+        compressImageMaxWidth: 720,
         cropping: true,
         compressImageQuality: 0.7,
       }).then(image => {
@@ -33,8 +49,8 @@ const Camera = () => {
   const takePhotoFromLibrary = () => {
     try {
       ImagePicker.openPicker({
-        compressImageMaxHeight: 300,
-        compressImageMaxWidth: 300,
+        compressImageMaxHeight: 1280,
+        compressImageMaxWidth: 720,
         cropping: true,
         compressImageQuality: 0.7,
       }).then(image => {
@@ -88,15 +104,70 @@ const Camera = () => {
     </View>
   );
 
+  const UploadCancelHandle = () => {
+    setImage(null);
+    //console.log(`cancel pressed`);
+  };
+
+  const UploadHandle = async () => {
+    if (image == null) {
+      return null;
+    }
+    const uploadUri = image;
+    let filename = uploadUri.substring(uploadUri.lastIndexOf('/') + 1);
+    let extension = filename.split('.').pop();
+    let name = filename.split('.').slice(0, 1).join();
+    filename = name + '-' + Date.now() + '.' + extension;
+    console.log(`filename`, filename);
+
+    setUploading(true);
+    setTransferred(0);
+
+    const storageRef = storage().ref(`photos/${filename}`);
+    const task = storageRef.putFile(uploadUri);
+
+    task.on('state_changed', taskSnapshot => {
+      console.log(
+        `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
+      );
+
+      setTransferred(
+        Math.round(taskSnapshot.bytesTransferred / taskSnapshot.totalBytes) *
+          10,
+      );
+    });
+
+    try {
+      await task;
+
+      const url = await storageRef.getDownloadURL();
+
+      setDownloadUrl(url);
+      setUploading(false);
+      setImage(null);
+
+      console.log(`DownloadUrl-`, downloadUrl);
+
+      Alert.alert('Success', `Here is your download url: ${url}`);
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+
+    // task.then(() => {
+    //   console.log('Image uploaded to the bucket!');
+    // });
+  };
+
   const renderHeader = () => (
     <View style={styles.headerDotContainer}>
-      <View style={styles.headerDot}></View>
+      <View style={styles.headerDot} />
     </View>
   );
 
   return (
     <>
-      <View style={styles.container}>
+      <Animated.View style={[styles.container]}>
         <View style={styles.header}>
           <Text style={GlobalStyles.Text}>Camera</Text>
         </View>
@@ -109,14 +180,34 @@ const Camera = () => {
             style={{backgroundColor: '#4d7fff'}}
             onPress={handleModalClick}
           />
+          {downloadUrl != null ? (
+            <TouchableOpacity onPress={() => Linking.openURL(downloadUrl)}>
+              <Text style={[GlobalStyles.Text, {color: 'blue'}]}>
+                Open Last Uploaded Picture
+              </Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
-      </View>
-      <View>
-        {/* <Button
+        {image != null ? (
+          <AddImage
+            imageURI={image}
+            onPressUpload={UploadHandle}
+            onPressCancel={UploadCancelHandle}
+          />
+        ) : null}
+        {uploading ? (
+          <View style={{alignItems: 'center', justifyContent: 'center'}}>
+            <Text>{transferred} % Complete</Text>
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+        ) : null}
+      </Animated.View>
+      {/* <View>
+        <Button
           title="Open Bottom Sheet"
           onPress={() => sheetRef.current.snapTo(0)}
-        /> */}
-      </View>
+        />
+      </View> */}
       <BottomSheet
         ref={sheetRef}
         snapPoints={[400, 300, 0]}
