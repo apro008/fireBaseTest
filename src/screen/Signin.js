@@ -92,7 +92,30 @@ const Signin = ({navigation}) => {
     );
 
     // Sign-in the user with the credential
-    await auth().signInWithCredential(twitterCredential);
+    await auth()
+      .signInWithCredential(twitterCredential)
+      .then(() => {
+        //Once the user creation has happened successfully, we can add the currentUser into firestore
+        //with the appropriate details.
+        console.log('current User', auth().currentUser);
+        firestore()
+          .collection('users')
+          .doc(auth().currentUser.email)
+          .set({
+            fname: auth().currentUser.displayName.split(' ')[0],
+            lname: auth().currentUser.displayName.split(' ')[1],
+            email: auth().currentUser.email,
+            createdAt: firestore.Timestamp.fromDate(new Date()),
+            userImg: auth().currentUser.photoURL,
+          })
+          //ensure we catch any errors at this stage to advise us if something does go wrong
+          .catch(error => {
+            console.log(
+              'Something went wrong with added user to firestore: ',
+              error,
+            );
+          });
+      });
   };
 
   const onFacebookButtonPress = async () => {
@@ -114,8 +137,30 @@ const Signin = ({navigation}) => {
       data.accessToken,
     );
     // Sign-in the user with the credential
-    await auth().signInWithCredential(facebookCredential);
-
+    await auth()
+      .signInWithCredential(facebookCredential)
+      .then(() => {
+        //Once the user creation has happened successfully, we can add the currentUser into firestore
+        //with the appropriate details.
+        console.log('current User', auth().currentUser);
+        firestore()
+          .collection('users')
+          .doc(auth().currentUser.email)
+          .set({
+            fname: auth().currentUser.displayName.split(' ')[0],
+            lname: auth().currentUser.displayName.split(' ')[1],
+            email: auth().currentUser.email,
+            createdAt: firestore.Timestamp.fromDate(new Date()),
+            userImg: auth().currentUser.photoURL,
+          })
+          //ensure we catch any errors at this stage to advise us if something does go wrong
+          .catch(error => {
+            console.log(
+              'Something went wrong with added user to firestore: ',
+              error,
+            );
+          });
+      });
     // Once signed in, get the users AccesToken
     // const data = await AccessToken.getCurrentAccessToken();
     // if (!data) {
